@@ -1,36 +1,90 @@
 import React, { useState } from 'react';
-import { Upload, Button, Card, Checkbox, Input, Select, InputNumber, Row, Col, Form } from 'antd';
-import { UploadOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Upload, Button, Card, Checkbox, Input, Select, InputNumber, Row, Col, Form, message } from 'antd';
+import { UploadOutlined } from '@ant-design/icons';
 
 const { TextArea } = Input;
 const { Option } = Select;
 
 const RecipeRecommender = () => {
   const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
 
   const handleImageUpload = ({ file, fileList }) => {
     if (fileList.length > 5) {
+      message.warning('Maximum 5 images allowed');
       return;
     }
     setImages(fileList);
+    form.validateFields(['images']);
   };
 
   const handleRemoveImage = (file) => {
-    setImages((prev) => prev.filter((img) => img.uid !== file.uid));
+    const newFileList = images.filter((img) => img.uid !== file.uid);
+    setImages(newFileList);
+    form.validateFields(['images']);
   };
 
-  const handleSubmit = (values) => {
-    console.log('Form submitted:', { images, values });
+  const handleSubmit = async (values) => {
+    if (images.length === 0) {
+      message.error('Please upload at least one image');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      console.log('Form Values:', values);
+      console.log('Images:', images);
+
+      const formData = new FormData();
+      images.forEach((image, index) => {
+        formData.append(`image${index}`, image.originFileObj);
+      });
+      Object.keys(values).forEach(key => {
+        if (Array.isArray(values[key])) {
+          formData.append(key, values[key].join(','));
+        } else if (values[key] !== undefined && values[key] !== null) {
+          formData.append(key, values[key]);
+        }
+      });
+
+      message.success('Form submitted successfully! Check console for details.');
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      message.error('Failed to submit form. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
     <Row justify="center">
       <Col span={16}>
         <Card title="Smart Recipe Recommender">
-          <Form form={form} layout="vertical" onFinish={handleSubmit}>
-            {/* Image Upload */}
-            <Form.Item label="Upload Fridge Pictures (Max 5)">
+          <Form 
+            form={form} 
+            layout="vertical" 
+            onFinish={handleSubmit}
+            initialValues={{
+              servings: 2,
+              numberOfMeals: 1,
+              cookingSkill: 'intermediate'
+            }}
+          >
+            <Form.Item 
+              label={<span>Upload Fridge Pictures <span style={{ color: 'red' }}>*</span> (Max 5)</span>} 
+              name="images"
+              rules={[
+                {
+                  required: true,
+                  validator: async () => {
+                    if (images.length === 0) {
+                      throw new Error('Please upload at least one image');
+                    }
+                  },
+                },
+              ]}
+            >
               <Upload
                 listType="picture-card"
                 beforeUpload={() => false}
@@ -39,29 +93,29 @@ const RecipeRecommender = () => {
                 multiple
                 fileList={images}
               >
-                {images.length < 5 && <UploadOutlined />}
+                {images.length < 5 && (
+                  <div>
+                    <UploadOutlined />
+                    <div style={{ marginTop: 8 }}>Upload (Required)</div>
+                  </div>
+                )}
               </Upload>
             </Form.Item>
 
-            {/* Additional Ingredients */}
             <Form.Item label="Additional Ingredients" name="additionalIngredients">
               <TextArea rows={3} placeholder="Enter ingredients not visible in the photos..." />
             </Form.Item>
 
-            {/* Dietary Restrictions */}
             <Form.Item label="Dietary Restrictions" name="dietaryRestrictions">
               <Checkbox.Group>
-                {['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Nut-Free', 'Halal', 'Kosher', 'Low-Carb'].map(
-                  (restriction) => (
-                    <Checkbox key={restriction} value={restriction.toLowerCase()}>
-                      {restriction}
-                    </Checkbox>
-                  )
-                )}
+                {['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Nut-Free', 'Halal', 'Kosher', 'Low-Carb'].map((restriction) => (
+                  <Checkbox key={restriction} value={restriction.toLowerCase()}>
+                    {restriction}
+                  </Checkbox>
+                ))}
               </Checkbox.Group>
             </Form.Item>
 
-            {/* Calories, Meals, Servings */}
             <Row gutter={16}>
               <Col span={8}>
                 <Form.Item label="Calories per Meal" name="caloriesPerMeal">
@@ -80,60 +134,9 @@ const RecipeRecommender = () => {
               </Col>
             </Row>
 
-            {/* Dropdowns */}
-            <Row gutter={16}>
-              <Col span={8}>
-                <Form.Item label="Preferred Cuisine" name="cuisine">
-                  <Select placeholder="Select Cuisine">
-                    {['Italian', 'Chinese', 'Indian', 'Mexican', 'Japanese', 'Thai', 'Mediterranean', 'American', 'French', 'Korean'].map(
-                      (cuisine) => (
-                        <Option key={cuisine} value={cuisine.toLowerCase()}>
-                          {cuisine}
-                        </Option>
-                      )
-                    )}
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item label="Meal Type" name="mealType">
-                  <Select placeholder="Select Meal Type">
-                    {['Breakfast', 'Brunch', 'Lunch', 'Dinner', 'Snack', 'Dessert'].map((type) => (
-                      <Option key={type} value={type.toLowerCase()}>
-                        {type}
-                      </Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-              <Col span={8}>
-                <Form.Item label="Cooking Skill Level" name="cookingSkill" initialValue="intermediate">
-                  <Select>
-                    <Option value="beginner">Beginner</Option>
-                    <Option value="intermediate">Intermediate</Option>
-                    <Option value="advanced">Advanced</Option>
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-
-            {/* Cooking Time */}
-            <Form.Item label="Maximum Cooking Time" name="cookingTime">
-              <Select>
-                <Option value="">Any Duration</Option>
-                <Option value="15">15 minutes or less</Option>
-                <Option value="30">30 minutes or less</Option>
-                <Option value="45">45 minutes or less</Option>
-                <Option value="60">1 hour or less</Option>
-                <Option value="90">1.5 hours or less</Option>
-                <Option value="120">2 hours or less</Option>
-              </Select>
-            </Form.Item>
-
-            {/* Submit Button */}
             <Form.Item>
-              <Button type="primary" htmlType="submit" block>
-                Generate Recipe Recommendations
+              <Button type="primary" htmlType="submit" block loading={loading}>
+                {loading ? 'Submitting...' : 'Generate Recipe Recommendations'}
               </Button>
             </Form.Item>
           </Form>
