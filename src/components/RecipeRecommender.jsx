@@ -256,8 +256,8 @@ const RecipeRecommender = () => {
             <Form.Item 
               label={
                 <span>
-                  Upload Fridge Pictures <span style={{ color: 'red' }}>*</span> (Max 5)
-                </span>
+                Please Upload Available Ingredients Pictures <span style={{ color: 'red' }}>*</span> (Max 5)
+              </span>
               } 
               name="images"
               rules={[
@@ -319,7 +319,7 @@ const RecipeRecommender = () => {
             <Row gutter={16}>
               <Col span={8}>
                 <Form.Item label="Calories per Meal" name="caloriesPerMeal">
-                  <InputNumber min={0} placeholder="e.g., 500" style={{ width: '100%' }} />
+                  <InputNumber min={500} max={5000} placeholder="e.g., 500" style={{ width: '100%' }} />
                 </Form.Item>
               </Col>
               <Col span={8}>
