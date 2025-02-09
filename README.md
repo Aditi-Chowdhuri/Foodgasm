@@ -52,6 +52,15 @@ Many people struggle with deciding what to cook based on the ingredients they ha
   - **Recipe Suggestion**: Large Language Model (LLM) such as OpenAI's GPT, Llama, or a fine-tuned transformer model.  
   - **Calorie & Nutrition Analysis**: LLM-based estimation.
 
+## Foodgasm Gallery
+
+![Image 1](https://github.com/Aditi-Chowdhuri/Foodgasm/raw/main/images/1.jpg)
+![Image 2](https://github.com/Aditi-Chowdhuri/Foodgasm/raw/main/images/2.jpg)
+![Image 3](https://github.com/Aditi-Chowdhuri/Foodgasm/raw/main/images/3.jpg)
+![Image 4](https://github.com/Aditi-Chowdhuri/Foodgasm/raw/main/images/4.jpg)
+![Image 5](https://github.com/Aditi-Chowdhuri/Foodgasm/raw/main/images/5.jpg)
+
+
 ---
 
 *By integrating advanced AI, dietary filters, and nutritional tracking, FoodGasm offers a personalized, health-conscious, and intelligent recipe recommendation system—helping users cook smarter, waste less, and eat healthier.*
