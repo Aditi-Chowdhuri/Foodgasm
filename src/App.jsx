@@ -5,7 +5,6 @@ import './App.css'
 import RecipeRecommender from "./components/RecipeRecommender";
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <div>

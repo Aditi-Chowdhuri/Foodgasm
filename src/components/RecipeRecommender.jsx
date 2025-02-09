@@ -19,30 +19,30 @@ const RecipeRecommender = () => {
   const [loadingDetails, setLoadingDetails] = useState(false);
   const [form] = Form.useForm();
 
-  const findErrors = useCallback(() => {
-    console.log(imagesBase64);
-    async function run() {
-      axios
-        .post(
-          'http://localhost:8000/errordetection',
-          {
-            images: JSON.stringify(imagesBase64.map(e => e.split(',')[1])),
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        )
-        .then((response) => {
-          console.log(response.data);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
-    }
-    run();
-  }, [images, imagesBase64]);
+  // const findErrors = useCallback(() => {
+  //   console.log(imagesBase64);
+  //   async function run() {
+  //     axios
+  //       .post(
+  //         'http://localhost:8000/errordetection',
+  //         {
+  //           images: JSON.stringify(imagesBase64.map(e => e.split(',')[1])),
+  //         },
+  //         {
+  //           headers: {
+  //             'Content-Type': 'application/json',
+  //           },
+  //         }
+  //       )
+  //       .then((response) => {
+  //         console.log(response.data);
+  //       })
+  //       .catch((error) => {
+  //         console.error(error);
+  //       });
+  //   }
+  //   run();
+  // }, [images, imagesBase64]);
 
   const handleFetchIngredients = async () => {
     if (imagesBase64.length === 0) {
@@ -51,6 +51,28 @@ const RecipeRecommender = () => {
     }
     try {
       setFetchingIngredients(true);
+      const l1_response = await axios.post(
+        'http://localhost:8000/errordetection',
+        {
+          images: JSON.stringify(imagesBase64.map(e => e.split(',')[1])),
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      console.log(l1_response.data);
+
+      if (l1_response.data.status === false) {
+        message.error('No food detected in the images');
+        setFetchingIngredients(false);
+        return;
+      } else if (l1_response.data.status === true) {
+        message.success('Food detected in the images');
+      }
+
       const response = await axios.post(
         'http://localhost:8000/ingredients',
         {
