@@ -9,7 +9,6 @@ const RecipeRecommender = () => {
   const [images, setImages] = useState([]);
   const [imagesBase64, setImagesBase64] = useState([]);
   const [loading, setLoading] = useState(false);
-  // State to store ingredients fetched from the backend
   const [fetchedIngredients, setFetchedIngredients] = useState('');
   const [fetchingIngredients, setFetchingIngredients] = useState(false);
   const [recommendedRecipes, setRecommendedRecipes] = useState([]);
@@ -65,7 +64,6 @@ const RecipeRecommender = () => {
     }
   };
 
-  // New function to fetch ingredients and update the state to display them
   const handleFetchIngredients = async () => {
     if (imagesBase64.length === 0) {
       message.error('Please upload at least one image before fetching ingredients');
@@ -134,7 +132,6 @@ const RecipeRecommender = () => {
     reader.readAsDataURL(file);
     reader.onload = () => {
       const base64data = reader.result;
-      // Append the new base64 string to the existing array.
       setImagesBase64([...imagesBase64, base64data]);
     };
     reader.onerror = (error) => {
@@ -203,10 +200,43 @@ const RecipeRecommender = () => {
       message.success('Recipes fetched successfully!');
     } catch (error) {
       console.error('Error submitting form:', error);
-      message.error('Failed to submit form. Please try again.');
+      message.error('Failed to fetch recipes. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRecipeSelection = async (recipeName) => {
+    setSelectedRecipe(recipeName);
+    try {
+      setLoadingDetails(true);
+      setIsModalVisible(true);
+      
+      const response = await axios.post(
+        'http://localhost:8000/recipe-details',
+        {
+          recipe: recipeName,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      setRecipeDetails(response.data);
+    } catch (error) {
+      console.error('Error fetching recipe details:', error);
+      message.error('Failed to fetch recipe details');
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
+  const handleModalClose = () => {
+    setIsModalVisible(false);
+    setRecipeDetails(null);
+    setSelectedRecipe(null);
   };
 
   return (
@@ -258,7 +288,6 @@ const RecipeRecommender = () => {
               </Upload>
             </Form.Item>
 
-            {/* Updated button with type="primary" to make it blue */}
             <Form.Item>
               <Button 
                 type="primary" 
@@ -269,7 +298,6 @@ const RecipeRecommender = () => {
               </Button>
             </Form.Item>
 
-            {/* Text area to display the fetched ingredients */}
             <Form.Item label="Fetched Ingredients">
               <TextArea rows={3} value={fetchedIngredients} readOnly />
             </Form.Item>
@@ -308,7 +336,7 @@ const RecipeRecommender = () => {
 
             <Form.Item>
               <Button type="primary" htmlType="submit" block loading={loading}>
-                {loading ? 'Submitting...' : 'Generate Recipe Recommendations'}
+                {loading ? 'Fetching Recommendations...' : 'Generate Recipe Recommendations'}
               </Button>
             </Form.Item>
           </Form>
