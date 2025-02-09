@@ -54,11 +54,11 @@ Many people struggle with deciding what to cook based on the ingredients they ha
 
 ## Foodgasm Gallery
 
-![Image 1](https://github.com/Aditi-Chowdhuri/Foodgasm/raw/main/images/1.jpg)
-![Image 2](https://github.com/Aditi-Chowdhuri/Foodgasm/raw/main/images/2.jpg)
-![Image 3](https://github.com/Aditi-Chowdhuri/Foodgasm/raw/main/images/3.jpg)
-![Image 4](https://github.com/Aditi-Chowdhuri/Foodgasm/raw/main/images/4.jpg)
-![Image 5](https://github.com/Aditi-Chowdhuri/Foodgasm/raw/main/images/5.jpg)
+<img src="https://github.com/Aditi-Chowdhuri/Foodgasm/raw/main/images/1.jpg" alt="Image 1" width="400" />
+<img src="https://github.com/Aditi-Chowdhuri/Foodgasm/raw/main/images/2.jpg" alt="Image 2" width="400" />
+<img src="https://github.com/Aditi-Chowdhuri/Foodgasm/raw/main/images/3.jpg" alt="Image 1" width="400" />
+<img src="https://github.com/Aditi-Chowdhuri/Foodgasm/raw/main/images/4.jpg" alt="Image 2" width="400" />
+<img src="https://github.com/Aditi-Chowdhuri/Foodgasm/raw/main/images/5.jpg" alt="Image 1" width="400" />
 
 
 ---
