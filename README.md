@@ -1,8 +1,6 @@
 [![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
 <a href="https://reactjs.org/"><img src="https://img.shields.io/badge/React%20JS-v17.0.2-blue?style=for-the-badge&logo=react" /></a>
 <a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/badge/FastAPI-v0.70-blue?style=for-the-badge&logo=fastapi" /></a>
-<a href="https://www.tensorflow.org/"><img src="https://img.shields.io/badge/TensorFlow-v2.4.0-orange?style=for-the-badge&logo=tensorflow" /></a>
-
 
 **FoodGasm: AI-Powered Recipe Suggestions from Fridge Images** is an innovative solution designed to help users make the most out of their available ingredients. Leveraging cutting-edge computer vision and natural language processing, FoodGasm detects ingredients from fridge images and generates personalized recipe recommendations—all while considering dietary restrictions and calorie goals.
 
