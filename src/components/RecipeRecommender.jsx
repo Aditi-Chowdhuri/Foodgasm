@@ -1,14 +1,33 @@
-import React, { useState } from 'react';
+import React, { use, useState, useCallback } from 'react';
 import { Upload, Button, Card, Checkbox, Input, Select, InputNumber, Row, Col, Form, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
+import ollama from 'ollama';
+import { errorMsgSystem, errorMsgUser } from './constants';
 
 const { TextArea } = Input;
 const { Option } = Select;
 
 const RecipeRecommender = () => {
   const [images, setImages] = useState([]);
+  const [imagesBase64, setImagesBase64] = useState([]);
   const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
+
+  const findErrors = useCallback(() => {
+    async function run() {
+      const output = await ollama.chat({
+        model: 'llama3.2-vision',
+        messages: [
+          { role: 'system', content: errorMsgSystem },
+          { role: 'user', content: errorMsgUser, images: imagesBase64 }
+        ]
+      })
+
+      console.log('Errors:', output);
+    }
+
+    run();
+  }, []);
 
   const handleImageUpload = ({ file, fileList }) => {
     if (fileList.length > 5) {
@@ -16,12 +35,29 @@ const RecipeRecommender = () => {
       return;
     }
     setImages(fileList);
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const base64data = reader.result;
+      setImagesBase64([...imagesBase64, (fileList[fileList.length - 1], base64data)]);
+    };
+    reader.onerror = (error) => {
+      console.error('Error reading file:', error);
+    };
     form.validateFields(['images']);
   };
 
   const handleRemoveImage = (file) => {
-    const newFileList = images.filter((img) => img.uid !== file.uid);
-    setImages(newFileList);
+    const index = images.findIndex((img) => img.uid === file.uid);
+    if (index > -1) {
+      images.splice(index, 1);
+      setImages([...images]);
+    }
+    const base64Index = imagesBase64.findIndex((img) => img[0].uid === file.uid);
+    if (base64Index > -1) {
+      imagesBase64.splice(base64Index, 1);
+      setImagesBase64([...imagesBase64]);
+    }
     form.validateFields(['images']);
   };
 
@@ -49,6 +85,8 @@ const RecipeRecommender = () => {
       });
 
       message.success('Form submitted successfully! Check console for details.');
+
+      findErrors();
     } catch (error) {
       console.error('Error submitting form:', error);
       message.error('Failed to submit form. Please try again.');
