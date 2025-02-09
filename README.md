@@ -50,9 +50,9 @@ Many people struggle with deciding what to cook based on the ingredients they ha
   - **FastAPI** for creating a high-performance, Python-based API service.
   
 - **AI & Image Processing**:  
-  - **Computer Vision**: OpenCV, TensorFlow, or Google Vision API for ingredient recognition.  
+  - **Computer Vision**: Microsoft Phi 3.5 Vision Instruct for ingredient recognition.  
   - **Recipe Suggestion**: Large Language Model (LLM) such as OpenAI's GPT, Llama, or a fine-tuned transformer model.  
-  - **Calorie & Nutrition Analysis**: Nutrition APIs (e.g., Edamam, USDA API) or LLM-based estimation.
+  - **Calorie & Nutrition Analysis**: LLM-based estimation.
 
 ---
 
