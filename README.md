@@ -1,6 +1,6 @@
 [![forthebadge made-with-python](http://ForTheBadge.com/images/badges/made-with-python.svg)](https://www.python.org/)
-<a href="https://nodejs.org/"><img src="https://img.shields.io/badge/Node.js-v14.x-green?style=for-the-badge&logo=node.js" /></a>
-<a href="https://reactnative.dev/"><img src="https://img.shields.io/badge/React%20Native-v0.64-blue?style=for-the-badge&logo=react" /></a>
+<a href="https://reactjs.org/"><img src="https://img.shields.io/badge/React%20JS-v17.0.2-blue?style=for-the-badge&logo=react" /></a>
+<a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/badge/FastAPI-v0.70-blue?style=for-the-badge&logo=fastapi" /></a>
 <a href="https://www.tensorflow.org/"><img src="https://img.shields.io/badge/TensorFlow-v2.4.0-orange?style=for-the-badge&logo=tensorflow" /></a>
 
 # <img src="https://via.placeholder.com/40" width="5%" style="padding:2px"> FoodVision
@@ -41,10 +41,10 @@ Many people struggle with deciding what to cook based on the ingredients they ha
 
 ## **Tech Stack**  
 - **Frontend**:  
-  - **React Native** for a cross-platform mobile application.
+  - **React JS** for building a responsive and dynamic web application.
   
 - **Backend**:  
-  - **Node.js with Express** for building a robust API service.
+  - **FastAPI** for creating a high-performance, Python-based API service.
   
 - **AI & Image Processing**:  
   - **Computer Vision**: OpenCV, TensorFlow, or Google Vision API for ingredient recognition.  
@@ -59,7 +59,7 @@ Many people struggle with deciding what to cook based on the ingredients they ha
   - **AWS S3** or **Firebase Storage** for saving fridge images.
   
 - **Hosting & API Services**:  
-  - **AWS Lambda** / **Google Cloud Functions** for serverless execution and scalability.
+  - **AWS Lambda** / **Google Cloud Functions** or containerized deployments for serverless execution and scalability.
 
 ---
 
