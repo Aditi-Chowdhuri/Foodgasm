@@ -3,11 +3,14 @@
 <a href="https://fastapi.tiangolo.com/"><img src="https://img.shields.io/badge/FastAPI-v0.70-blue?style=for-the-badge&logo=fastapi" /></a>
 <a href="https://www.tensorflow.org/"><img src="https://img.shields.io/badge/TensorFlow-v2.4.0-orange?style=for-the-badge&logo=tensorflow" /></a>
 
-# <img src="https://via.placeholder.com/40" width="5%" style="padding:2px"> FoodVision
 
-**FoodVision: AI-Powered Recipe Suggestions from Fridge Images** is an innovative solution designed to help users make the most out of their available ingredients. Leveraging cutting-edge computer vision and natural language processing, FoodVision detects ingredients from fridge images and generates personalized recipe recommendations—all while considering dietary restrictions and calorie goals.
+**FoodGasm: AI-Powered Recipe Suggestions from Fridge Images** is an innovative solution designed to help users make the most out of their available ingredients. Leveraging cutting-edge computer vision and natural language processing, FoodGasm detects ingredients from fridge images and generates personalized recipe recommendations—all while considering dietary restrictions and calorie goals.
 
 ---
+
+✅ **Groq LLM-Powered Recipe Generation** – Faster and more accurate than conventional LLMs.  
+✅ **Memenome.ai for Fun Error Handling** – Turning failures into an engaging experience.  
+
 
 ## **Problem Statement**  
 Many people struggle with deciding what to cook based on the ingredients they have. Food waste is a major issue, and manually searching for recipes that match available ingredients can be time-consuming. Additionally, people with specific dietary restrictions or calorie goals often find it difficult to filter recipes that align with their needs.
@@ -49,18 +52,8 @@ Many people struggle with deciding what to cook based on the ingredients they ha
 - **AI & Image Processing**:  
   - **Computer Vision**: OpenCV, TensorFlow, or Google Vision API for ingredient recognition.  
   - **Recipe Suggestion**: Large Language Model (LLM) such as OpenAI's GPT, Llama, or a fine-tuned transformer model.  
-  - **NLP-Based Ingredient Matching**: Utilizing embeddings (e.g., BERT, FAISS) for mapping ingredients to recipes.  
   - **Calorie & Nutrition Analysis**: Nutrition APIs (e.g., Edamam, USDA API) or LLM-based estimation.
-  
-- **Database**:  
-  - **PostgreSQL** or **MongoDB** for storing recipes, user preferences, and history.
-  
-- **Cloud Storage**:  
-  - **AWS S3** or **Firebase Storage** for saving fridge images.
-  
-- **Hosting & API Services**:  
-  - **AWS Lambda** / **Google Cloud Functions** or containerized deployments for serverless execution and scalability.
 
 ---
 
-*By integrating advanced AI, dietary filters, and nutritional tracking, FoodVision offers a personalized, health-conscious, and intelligent recipe recommendation system—helping users cook smarter, waste less, and eat healthier.*
+*By integrating advanced AI, dietary filters, and nutritional tracking, FoodGasm offers a personalized, health-conscious, and intelligent recipe recommendation system—helping users cook smarter, waste less, and eat healthier.*
