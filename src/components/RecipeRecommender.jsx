@@ -21,7 +21,7 @@ const RecipeRecommender = () => {
     async function run() {
       axios
         .post(
-          'http://localhost:8000/ingredients',
+          'http://localhost:8000/errordetection',
           {
             images: JSON.stringify(imagesBase64.map(e => e.split(',')[1])),
           },
@@ -122,6 +122,43 @@ const RecipeRecommender = () => {
         } else if (values[key] !== undefined && values[key] !== null) {
           formData.append(key, values[key]);
         }
+      });
+
+      console.log(formData.get('caloriesPerMeal'));
+      console.log(formData.get('servings'));
+      console.log(formData.get('numberOfMeals'));
+
+      const dietaryRestrictions = formData.get('dietaryRestrictions') ? formData.get('dietaryRestrictions') : "None";
+      const addIngredients = formData.get('additionalIngredients') ? formData.get('additionalIngredients') : "";
+
+      console.log('Dietary Restrictions:', dietaryRestrictions);
+      console.log('Additional Ingredients:', addIngredients);
+
+      const data = {
+        calories: formData.get('caloriesPerMeal').toString(),
+        servings: formData.get('servings').toString(),
+        meals: formData.get('numberOfMeals').toString(),
+        additional: addIngredients,
+        restrictions: dietaryRestrictions,
+        ingredients: fetchedIngredients
+      }
+
+      console.log('Data:', data);
+
+      const response = await axios.post(
+        'http://localhost:8000/recommend',
+        {
+          data: JSON.stringify(data),
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      ).then((response) => {
+        console.log(response);
+      }).then((error) => {
+        console.error(error);
       });
 
       message.success('Form submitted successfully! Check console for details.');
@@ -235,7 +272,7 @@ const RecipeRecommender = () => {
 
             <Form.Item>
               <Button type="primary" htmlType="submit" block loading={loading}>
-                {loading ? 'Submitting...' : 'Generate Recipe Recommendations'}
+                {loading ? 'Fetching Recommendations...' : 'Generate Recipe Recommendations'}
               </Button>
             </Form.Item>
           </Form>
