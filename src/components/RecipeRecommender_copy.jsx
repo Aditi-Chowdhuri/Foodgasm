@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
-import { Upload, Button, Card, Checkbox, Input, InputNumber, Row, Col, Form, message, Modal, Radio } from 'antd';
+import React, { useState, useCallback } from 'react';
+import { Upload, Button, Card, Checkbox, Input, Select, InputNumber, Row, Col, Form, message, Modal, Radio } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import axios from "axios";
 
 const { TextArea } = Input;
+const { Option } = Select;
 
 const RecipeRecommender = () => {
   const [images, setImages] = useState([]);
   const [imagesBase64, setImagesBase64] = useState([]);
   const [loading, setLoading] = useState(false);
-  // State to store ingredients fetched from the backend
   const [fetchedIngredients, setFetchedIngredients] = useState('');
   const [fetchingIngredients, setFetchingIngredients] = useState(false);
   const [recommendedRecipes, setRecommendedRecipes] = useState([]);
@@ -17,61 +17,38 @@ const RecipeRecommender = () => {
   const [recipeDetails, setRecipeDetails] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [loadingDetails, setLoadingDetails] = useState(false);
-  const [memeUrl, setMemeUrl] = useState(null);
-  const [showMemeModal, setShowMemeModal] = useState(false);
   const [form] = Form.useForm();
 
-  // Meme generation function
-  const generateMeme = async (text, templateUrl) => {
-    const url = "https://api.memenome.ai/memes";
-    const apiKey = "88ff86bc-a9fe-4c1f-9b5f-6ccbe6ea89e4";
-    
-    const payload = {
-      message: {
-        type: "text",
-        text: text,
-      },
-      template: {
-        url: templateUrl,
-      },
-    };
+  // const findErrors = useCallback(() => {
+  //   console.log(imagesBase64);
+  //   async function run() {
+  //     axios
+  //       .post(
+  //         'http://localhost:8000/errordetection',
+  //         {
+  //           images: JSON.stringify(imagesBase64.map(e => e.split(',')[1])),
+  //         },
+  //         {
+  //           headers: {
+  //             'Content-Type': 'application/json',
+  //           },
+  //         }
+  //       )
+  //       .then((response) => {
+  //         console.log(response.data);
+  //       })
+  //       .catch((error) => {
+  //         console.error(error);
+  //       });
+  //   }
+  //   run();
+  // }, [images, imagesBase64]);
 
-    try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "accept": "application/json",
-          "x-api-key": apiKey,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-      // I need to fetch image from response. It is not a json response.
-      const data = await response.blob();
-      // Convert blob to base64
-        const reader = new FileReader();
-        reader.readAsDataURL(data);
-        reader.onload = () => {
-            const base64data = reader.result;
-            console.log(base64data);
-            setMemeUrl(base64data);
-        }
-        setShowMemeModal(true);
-        
-      return data;
-    } catch (error) {
-      console.error("Error generating meme:", error);
-      return null;
-    }
-  };
-
-  // New function to fetch ingredients and update the state to display them
   const handleFetchIngredients = async () => {
     if (imagesBase64.length === 0) {
       message.error('Please upload at least one image before fetching ingredients');
       return;
     }
-
     try {
       setFetchingIngredients(true);
       const l1_response = await axios.post(
@@ -90,18 +67,9 @@ const RecipeRecommender = () => {
 
       if (l1_response.data.status === false) {
         message.error('No food detected in the images');
-        // Generate and show meme
-        const memeResult = await generateMeme(
-          "No food, sleep",
-          "https://meme0-prod.sfo3.cdn.digitaloceanspaces.com/templates/7dfc01cb-2c49-41dc-82e9-fe590f45be3d.png"
-        );
-        // if (memeResult) {
-        //   setMemeUrl(memeResult.image_url);
-        //   setShowMemeModal(true);
-        // }
         setFetchingIngredients(false);
         return;
-      }
+      } 
 
       const response = await axios.post(
         'http://localhost:8000/ingredients',
@@ -114,7 +82,7 @@ const RecipeRecommender = () => {
           },
         }
       );
-      
+      console.log(response.data);
       setFetchedIngredients(response.data.ingredients || JSON.stringify(response.data));
     } catch (error) {
       console.error(error);
@@ -134,7 +102,6 @@ const RecipeRecommender = () => {
     reader.readAsDataURL(file);
     reader.onload = () => {
       const base64data = reader.result;
-      // Append the new base64 string to the existing array.
       setImagesBase64([...imagesBase64, base64data]);
     };
     reader.onerror = (error) => {
@@ -162,6 +129,9 @@ const RecipeRecommender = () => {
 
     try {
       setLoading(true);
+      console.log('Form Values:', values);
+      console.log('Images:', images);
+
       const formData = new FormData();
       images.forEach((image, index) => {
         formData.append(`image${index}`, image.originFileObj);
@@ -186,6 +156,8 @@ const RecipeRecommender = () => {
         ingredients: fetchedIngredients
       }
 
+      console.log('Data:', data);
+
       const response = await axios.post(
         'http://localhost:8000/recommend',
         {
@@ -198,15 +170,50 @@ const RecipeRecommender = () => {
         }
       );
 
+      console.log('Raw response:', response);
       const recipes = response.data.recipes || [];
+      console.log('Processed recipes:', recipes);
       setRecommendedRecipes(recipes);
       message.success('Recipes fetched successfully!');
     } catch (error) {
       console.error('Error submitting form:', error);
-      message.error('Failed to submit form. Please try again.');
+      message.error('Failed to fetch recipes. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRecipeSelection = async (recipeName) => {
+    setSelectedRecipe(recipeName);
+    try {
+      setLoadingDetails(true);
+      setIsModalVisible(true);
+      
+      const response = await axios.post(
+        'http://localhost:8000/recipe-details',
+        {
+          recipe: recipeName,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      setRecipeDetails(response.data);
+    } catch (error) {
+      console.error('Error fetching recipe details:', error);
+      message.error('Failed to fetch recipe details');
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
+  const handleModalClose = () => {
+    setIsModalVisible(false);
+    setRecipeDetails(null);
+    setSelectedRecipe(null);
   };
 
   return (
@@ -258,7 +265,6 @@ const RecipeRecommender = () => {
               </Upload>
             </Form.Item>
 
-            {/* Updated button with type="primary" to make it blue */}
             <Form.Item>
               <Button 
                 type="primary" 
@@ -269,7 +275,6 @@ const RecipeRecommender = () => {
               </Button>
             </Form.Item>
 
-            {/* Text area to display the fetched ingredients */}
             <Form.Item label="Fetched Ingredients">
               <TextArea rows={3} value={fetchedIngredients} readOnly />
             </Form.Item>
@@ -308,11 +313,12 @@ const RecipeRecommender = () => {
 
             <Form.Item>
               <Button type="primary" htmlType="submit" block loading={loading}>
-                {loading ? 'Submitting...' : 'Generate Recipe Recommendations'}
+                {loading ? 'Fetching Recommendations...' : 'Generate Recipe Recommendations'}
               </Button>
             </Form.Item>
           </Form>
 
+          {console.log('Current recommendedRecipes state:', recommendedRecipes)}
           {recommendedRecipes.length > 0 && (
             <Card title="Recommended Recipes" style={{ marginTop: 24 }}>
               <div style={{ marginBottom: 16 }}>
@@ -335,7 +341,6 @@ const RecipeRecommender = () => {
             </Card>
           )}
 
-          {/* Recipe Details Modal */}
           <Modal
             title={selectedRecipe}
             open={isModalVisible}
@@ -382,29 +387,6 @@ const RecipeRecommender = () => {
               <div>No recipe details available</div>
             )}
           </Modal>
-
-          {/* Meme Modal */}
-          <Modal
-            title="No Food Detected"
-            open={showMemeModal}
-            onCancel={() => setShowMemeModal(false)}
-            footer={[
-                <Button key="close" onClick={() => setShowMemeModal(false)}>
-                Close
-                </Button>
-            ]}
-            >
-            {memeUrl && (
-                <div style={{ textAlign: 'center' }}>
-                <img 
-                    src={`${memeUrl}`} // Ensure correct base64 format
-                    alt="No food meme" 
-                    style={{ maxWidth: '100%', height: 'auto' }} 
-                />
-                </div>
-            )}
-          </Modal>
-
         </Card>
       </Col>
     </Row>
