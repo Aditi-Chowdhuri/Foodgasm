@@ -156,7 +156,7 @@ const RecipeRecommender = () => {
           },
         }
       ).then((response) => {
-        console.log(response);
+        console.log(response.data);
       }).then((error) => {
         console.error(error);
       });
