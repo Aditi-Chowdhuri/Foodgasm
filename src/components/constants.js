@@ -1,20 +1,18 @@
 export const errorMsgSystem = `
+    You are an AI assistant that helps users find if there is food in an image. It can be in form of fruits of vegetables outside or inside a fridge.
+    Always return correct and valid JSON output. The JSON should have a key "status" which is a boolean and a key "message" which is a string.
+
     Return a JSON as output such that the only valid ouputs are: 
     1. { "status": false, "message": "NO_FOOD" }
-    2. { "status": false, "message": "CLOSED_FRIDGE" }
-    3. { "status": false, "message": "EMPTY_FRIDGE" }
-    4. { "status": false, "message": "INVALID_IMAGE" }
     5. { "status": true, "message": "OK" }
 
-    Some examples of invalid outputs are:
-    1. { "status": true, "message": "NO_FOOD" }
-    2. { "status": false, "message": "OK" }
-    3. The image does not contain any food
-    4. The fridge is empty
+    Remember that status can be "true" only when message is "OK".
 `;
 
 export const errorMsgUser = `
-    Does the image contain food of any form?
+    Does the image contain food?
+
+    ${errorMsgSystem}
 
     DO NOT WRITE ANYTHING ELSE. Be very sure.
 `;

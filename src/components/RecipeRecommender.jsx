@@ -3,6 +3,8 @@ import { Upload, Button, Card, Checkbox, Input, Select, InputNumber, Row, Col, F
 import { UploadOutlined } from '@ant-design/icons';
 import ollama from 'ollama';
 import { errorMsgSystem, errorMsgUser } from './constants';
+import axios from "axios";
+
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -14,20 +16,43 @@ const RecipeRecommender = () => {
   const [form] = Form.useForm();
 
   const findErrors = useCallback(() => {
+    console.log(imagesBase64)
     async function run() {
-      const output = await ollama.chat({
-        model: 'llama3.2-vision',
-        messages: [
-          { role: 'system', content: errorMsgSystem },
-          { role: 'user', content: errorMsgUser, images: imagesBase64 }
-        ]
-      })
+      // const output = await ollama.chat({
+      //   model: 'llama3.2-vision',
+      //   messages: [
+      //     { role: 'system', content: errorMsgSystem },
+      //     { role: 'user', content: errorMsgUser, images: imagesBase64.map(e => e.split(',')[1]) }
+      //   ]
+      // })
 
-      console.log('Errors:', output);
+      // const output = await fetch('https://localhost:8000/' + JSON.stringify(imagesBase64.map(e => e.split(',')[1])));
+      // axios.post('http://localhost:8000/errordetection', {
+      //   images: JSON.stringify(imagesBase64.map(e => e.split(',')[1]))
+      // }, {
+      //   headers: {
+      //     'Content-Type': 'application/json'
+      //   }
+      // }).then((response) => {
+      //   console.log(response.data);
+      // }).catch((error) => {
+      //   console.error(error);
+      // });
+      axios.post('http://localhost:8000/ingredients', {
+        images: JSON.stringify(imagesBase64.map(e => e.split(',')[1]))
+      }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }).then((response) => {
+        console.log(response.data);
+      }).catch((error) => {
+        console.error(error);
+      });
     }
 
     run();
-  }, []);
+  }, [images, imagesBase64]);
 
   const handleImageUpload = ({ file, fileList }) => {
     if (fileList.length > 5) {
@@ -51,11 +76,8 @@ const RecipeRecommender = () => {
     const index = images.findIndex((img) => img.uid === file.uid);
     if (index > -1) {
       images.splice(index, 1);
+      imagesBase64.splice(index, 1);
       setImages([...images]);
-    }
-    const base64Index = imagesBase64.findIndex((img) => img[0].uid === file.uid);
-    if (base64Index > -1) {
-      imagesBase64.splice(base64Index, 1);
       setImagesBase64([...imagesBase64]);
     }
     form.validateFields(['images']);
