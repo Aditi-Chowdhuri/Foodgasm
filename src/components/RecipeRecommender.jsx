@@ -1,10 +1,7 @@
-import React, { use, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Upload, Button, Card, Checkbox, Input, Select, InputNumber, Row, Col, Form, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
-import ollama from 'ollama';
-import { errorMsgSystem, errorMsgUser } from './constants';
 import axios from "axios";
-
 
 const { TextArea } = Input;
 const { Option } = Select;
@@ -13,46 +10,66 @@ const RecipeRecommender = () => {
   const [images, setImages] = useState([]);
   const [imagesBase64, setImagesBase64] = useState([]);
   const [loading, setLoading] = useState(false);
+  // State to store ingredients fetched from the backend
+  const [fetchedIngredients, setFetchedIngredients] = useState('');
+  const [fetchingIngredients, setFetchingIngredients] = useState(false);
   const [form] = Form.useForm();
 
+  // Existing function (used on form submission) remains unchanged
   const findErrors = useCallback(() => {
-    console.log(imagesBase64)
+    console.log(imagesBase64);
     async function run() {
-      // const output = await ollama.chat({
-      //   model: 'llama3.2-vision',
-      //   messages: [
-      //     { role: 'system', content: errorMsgSystem },
-      //     { role: 'user', content: errorMsgUser, images: imagesBase64.map(e => e.split(',')[1]) }
-      //   ]
-      // })
-
-      // const output = await fetch('https://localhost:8000/' + JSON.stringify(imagesBase64.map(e => e.split(',')[1])));
-      // axios.post('http://localhost:8000/errordetection', {
-      //   images: JSON.stringify(imagesBase64.map(e => e.split(',')[1]))
-      // }, {
-      //   headers: {
-      //     'Content-Type': 'application/json'
-      //   }
-      // }).then((response) => {
-      //   console.log(response.data);
-      // }).catch((error) => {
-      //   console.error(error);
-      // });
-      axios.post('http://localhost:8000/ingredients', {
-        images: JSON.stringify(imagesBase64.map(e => e.split(',')[1]))
-      }, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      }).then((response) => {
-        console.log(response.data);
-      }).catch((error) => {
-        console.error(error);
-      });
+      axios
+        .post(
+          'http://localhost:8000/ingredients',
+          {
+            images: JSON.stringify(imagesBase64.map(e => e.split(',')[1])),
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        )
+        .then((response) => {
+          console.log(response.data);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
     }
-
     run();
   }, [images, imagesBase64]);
+
+  // New function to fetch ingredients and update the state to display them
+  const handleFetchIngredients = async () => {
+    if (imagesBase64.length === 0) {
+      message.error('Please upload at least one image before fetching ingredients');
+      return;
+    }
+    try {
+      setFetchingIngredients(true);
+      const response = await axios.post(
+        'http://localhost:8000/ingredients',
+        {
+          images: JSON.stringify(imagesBase64.map(e => e.split(',')[1])),
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      console.log(response.data);
+      // Assuming the API returns an object with an "ingredients" field.
+      setFetchedIngredients(response.data.ingredients || JSON.stringify(response.data));
+    } catch (error) {
+      console.error(error);
+      message.error('Failed to fetch ingredients');
+    } finally {
+      setFetchingIngredients(false);
+    }
+  };
 
   const handleImageUpload = ({ file, fileList }) => {
     if (fileList.length > 5) {
@@ -64,7 +81,8 @@ const RecipeRecommender = () => {
     reader.readAsDataURL(file);
     reader.onload = () => {
       const base64data = reader.result;
-      setImagesBase64([...imagesBase64, (fileList[fileList.length - 1], base64data)]);
+      // Append the new base64 string to the existing array.
+      setImagesBase64([...imagesBase64, base64data]);
     };
     reader.onerror = (error) => {
       console.error('Error reading file:', error);
@@ -98,7 +116,7 @@ const RecipeRecommender = () => {
       images.forEach((image, index) => {
         formData.append(`image${index}`, image.originFileObj);
       });
-      Object.keys(values).forEach(key => {
+      Object.keys(values).forEach((key) => {
         if (Array.isArray(values[key])) {
           formData.append(key, values[key].join(','));
         } else if (values[key] !== undefined && values[key] !== null) {
@@ -108,6 +126,7 @@ const RecipeRecommender = () => {
 
       message.success('Form submitted successfully! Check console for details.');
 
+      // Optionally, call the function that processes images on form submission.
       findErrors();
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -132,7 +151,11 @@ const RecipeRecommender = () => {
             }}
           >
             <Form.Item 
-              label={<span>Upload Fridge Pictures <span style={{ color: 'red' }}>*</span> (Max 5)</span>} 
+              label={
+                <span>
+                  Upload Fridge Pictures <span style={{ color: 'red' }}>*</span> (Max 5)
+                </span>
+              } 
               name="images"
               rules={[
                 {
@@ -160,6 +183,22 @@ const RecipeRecommender = () => {
                   </div>
                 )}
               </Upload>
+            </Form.Item>
+
+            {/* Updated button with type="primary" to make it blue */}
+            <Form.Item>
+              <Button 
+                type="primary" 
+                onClick={handleFetchIngredients} 
+                loading={fetchingIngredients}
+              >
+                {fetchingIngredients ? 'Fetching Ingredients...' : 'Fetch Ingredients'}
+              </Button>
+            </Form.Item>
+
+            {/* Text area to display the fetched ingredients */}
+            <Form.Item label="Fetched Ingredients">
+              <TextArea rows={3} value={fetchedIngredients} readOnly />
             </Form.Item>
 
             <Form.Item label="Additional Ingredients" name="additionalIngredients">
