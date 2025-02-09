@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Upload, Button, Card, Checkbox, Input, Select, InputNumber, Row, Col, Form, message } from 'antd';
+import { Upload, Button, Card, Checkbox, Input, Select, InputNumber, Row, Col, Form, message, Modal, Radio } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import axios from "axios";
 
@@ -10,12 +10,15 @@ const RecipeRecommender = () => {
   const [images, setImages] = useState([]);
   const [imagesBase64, setImagesBase64] = useState([]);
   const [loading, setLoading] = useState(false);
-  // State to store ingredients fetched from the backend
   const [fetchedIngredients, setFetchedIngredients] = useState('');
   const [fetchingIngredients, setFetchingIngredients] = useState(false);
+  const [recommendedRecipes, setRecommendedRecipes] = useState([]);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [recipeDetails, setRecipeDetails] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [loadingDetails, setLoadingDetails] = useState(false);
   const [form] = Form.useForm();
 
-  // Existing function (used on form submission) remains unchanged
   const findErrors = useCallback(() => {
     console.log(imagesBase64);
     async function run() {
@@ -41,7 +44,6 @@ const RecipeRecommender = () => {
     run();
   }, [images, imagesBase64]);
 
-  // New function to fetch ingredients and update the state to display them
   const handleFetchIngredients = async () => {
     if (imagesBase64.length === 0) {
       message.error('Please upload at least one image before fetching ingredients');
@@ -61,7 +63,6 @@ const RecipeRecommender = () => {
         }
       );
       console.log(response.data);
-      // Assuming the API returns an object with an "ingredients" field.
       setFetchedIngredients(response.data.ingredients || JSON.stringify(response.data));
     } catch (error) {
       console.error(error);
@@ -81,7 +82,6 @@ const RecipeRecommender = () => {
     reader.readAsDataURL(file);
     reader.onload = () => {
       const base64data = reader.result;
-      // Append the new base64 string to the existing array.
       setImagesBase64([...imagesBase64, base64data]);
     };
     reader.onerror = (error) => {
@@ -124,20 +124,13 @@ const RecipeRecommender = () => {
         }
       });
 
-      console.log(formData.get('caloriesPerMeal'));
-      console.log(formData.get('servings'));
-      console.log(formData.get('numberOfMeals'));
-
       const dietaryRestrictions = formData.get('dietaryRestrictions') ? formData.get('dietaryRestrictions') : "None";
       const addIngredients = formData.get('additionalIngredients') ? formData.get('additionalIngredients') : "";
 
-      console.log('Dietary Restrictions:', dietaryRestrictions);
-      console.log('Additional Ingredients:', addIngredients);
-
       const data = {
-        calories: formData.get('caloriesPerMeal').toString(),
-        servings: formData.get('servings').toString(),
-        meals: formData.get('numberOfMeals').toString(),
+        calories: formData.get('caloriesPerMeal')?.toString() || "",
+        servings: formData.get('servings')?.toString() || "2",
+        meals: formData.get('numberOfMeals')?.toString() || "1",
         additional: addIngredients,
         restrictions: dietaryRestrictions,
         ingredients: fetchedIngredients
@@ -155,22 +148,52 @@ const RecipeRecommender = () => {
             'Content-Type': 'application/json',
           },
         }
-      ).then((response) => {
-        console.log(response.data);
-      }).then((error) => {
-        console.error(error);
-      });
+      );
 
-      message.success('Form submitted successfully! Check console for details.');
-
-      // Optionally, call the function that processes images on form submission.
-      findErrors();
+      console.log('Raw response:', response);
+      const recipes = response.data.recipes || [];
+      console.log('Processed recipes:', recipes);
+      setRecommendedRecipes(recipes);
+      message.success('Recipes fetched successfully!');
     } catch (error) {
       console.error('Error submitting form:', error);
-      message.error('Failed to submit form. Please try again.');
+      message.error('Failed to fetch recipes. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRecipeSelection = async (recipeName) => {
+    setSelectedRecipe(recipeName);
+    try {
+      setLoadingDetails(true);
+      setIsModalVisible(true);
+      
+      const response = await axios.post(
+        'http://localhost:8000/recipe-details',
+        {
+          recipe: recipeName,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      setRecipeDetails(response.data);
+    } catch (error) {
+      console.error('Error fetching recipe details:', error);
+      message.error('Failed to fetch recipe details');
+    } finally {
+      setLoadingDetails(false);
+    }
+  };
+
+  const handleModalClose = () => {
+    setIsModalVisible(false);
+    setRecipeDetails(null);
+    setSelectedRecipe(null);
   };
 
   return (
@@ -222,7 +245,6 @@ const RecipeRecommender = () => {
               </Upload>
             </Form.Item>
 
-            {/* Updated button with type="primary" to make it blue */}
             <Form.Item>
               <Button 
                 type="primary" 
@@ -233,7 +255,6 @@ const RecipeRecommender = () => {
               </Button>
             </Form.Item>
 
-            {/* Text area to display the fetched ingredients */}
             <Form.Item label="Fetched Ingredients">
               <TextArea rows={3} value={fetchedIngredients} readOnly />
             </Form.Item>
@@ -276,6 +297,76 @@ const RecipeRecommender = () => {
               </Button>
             </Form.Item>
           </Form>
+
+          {console.log('Current recommendedRecipes state:', recommendedRecipes)}
+          {recommendedRecipes.length > 0 && (
+            <Card title="Recommended Recipes" style={{ marginTop: 24 }}>
+              <div style={{ marginBottom: 16 }}>
+                Found {recommendedRecipes.length} recommendations
+              </div>
+              <Radio.Group 
+                onChange={(e) => handleRecipeSelection(e.target.value)}
+                value={selectedRecipe}
+              >
+                <Row gutter={[0, 16]}>
+                  {recommendedRecipes.map((recipe, index) => (
+                    <Col span={24} key={index}>
+                      <Radio value={recipe} style={{ width: '100%', padding: '8px' }}>
+                        {recipe}
+                      </Radio>
+                    </Col>
+                  ))}
+                </Row>
+              </Radio.Group>
+            </Card>
+          )}
+
+          <Modal
+            title={selectedRecipe}
+            open={isModalVisible}
+            onCancel={handleModalClose}
+            footer={[
+              <Button key="close" onClick={handleModalClose}>
+                Close
+              </Button>
+            ]}
+            width={800}
+          >
+            {loadingDetails ? (
+              <div style={{ textAlign: 'center', padding: '20px' }}>
+                Loading recipe details...
+              </div>
+            ) : recipeDetails ? (
+              <div>
+                <h3>Ingredients</h3>
+                <ul>
+                  {recipeDetails.ingredients?.map((ingredient, index) => (
+                    <li key={index}>{ingredient}</li>
+                  ))}
+                </ul>
+                
+                <h3>Instructions</h3>
+                <ol>
+                  {recipeDetails.instructions?.map((step, index) => (
+                    <li key={index}>{step}</li>
+                  ))}
+                </ol>
+
+                {recipeDetails.nutritionalInfo && (
+                  <>
+                    <h3>Nutritional Information</h3>
+                    <ul>
+                      {Object.entries(recipeDetails.nutritionalInfo).map(([key, value]) => (
+                        <li key={key}>{`${key}: ${value}`}</li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </div>
+            ) : (
+              <div>No recipe details available</div>
+            )}
+          </Modal>
         </Card>
       </Col>
     </Row>

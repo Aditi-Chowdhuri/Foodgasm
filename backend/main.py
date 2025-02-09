@@ -143,7 +143,7 @@ def process_ingredients(payload: ImagePayload):
     You are an AI assistant that helps users find ingredients in an image. 
     Always return correct and valid JSON output. The JSON should have a key "ingredients" which is an array of strings.
 
-    Return a JSON as output. Some examples of valid outputs are: 
+    Return a JSON as output such that the only valid outputs are: 
     1. { "ingredients": ["apple", "banana", "carrot"] }
     2. { "ingredients": ["avocado"] }
     3. { "ingredients": [] }
@@ -218,7 +218,7 @@ def recipe_recommendations(payload: IngredientPayload):
     The available ingredients are {} and the additional ingredients are {}. The dietary restrictions are {} and the calories per meal is {}. The number of meals is {} and the servings needed is {}.
     Can you please provide the recipe names based on the above information.
 
-    Return a JSON as output. Some examples of valid outputs are:
+    Return a JSON as output like the:
     1. {{ "recipes": ["apple pie", "banana bread", "carrot cake"] }}
     2. {{ "recipes": ["avocado toast"] }}
     3. {{ "recipes": [] }}
@@ -262,3 +262,7 @@ def recipe_recommendations(payload: IngredientPayload):
         response = response[:-3]
 
     return json.loads(response)
+
+@app.get("/recipe")
+def get_recipe(recipe: str):
+    return 
